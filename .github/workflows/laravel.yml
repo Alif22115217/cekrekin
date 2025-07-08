@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8
         env:
-          MYSQL_ROOT_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: testing
         ports:
           - 3306:3306
@@ -25,17 +25,30 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
 
       - name: Install dependencies
         run: |
-          composer update --no-interaction --prefer-dist
+          composer install --no-interaction --prefer-dist
 
       - name: Set up environment file
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          sed -i 's/DB_HOST=127.0.0.1/DB_HOST=localhost/' .env
+          sed -i 's/DB_PORT=3306/DB_PORT=3306/' .env
+          sed -i 's/DB_DATABASE=laravel/DB_DATABASE=testing/' .env
+          sed -i 's/DB_USERNAME=root/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=root/' .env
 
       - name: Generate key
         run: php artisan key:generate
+
+      - name: Wait for MySQL to be ready
+        run: |
+          while ! mysqladmin ping -h"localhost" --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 2
+          done
 
       - name: Run migrations
         run: php artisan migrate --env=testing
