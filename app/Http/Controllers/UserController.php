@@ -118,10 +118,8 @@ class UserController extends Controller
             // Jika password lama salah, kirim pesan error
             return redirect()->back()->with('message', 'Password saat ini salah.');
         }
-
         // Ambil pengguna yang sedang login (ini adalah model Eloquent `User`)
         $user = Auth::user(); // Ini harus mengembalikan instance model User
-
         // Cek apakah objek yang didapatkan adalah instance dari model User
         if ($user instanceof User) {
             // Ganti password dengan password baru
