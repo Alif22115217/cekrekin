@@ -142,5 +142,4 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/alats', [AlatApiController::class, 'createAlat']);
 });
 
-
 Route::get('/logout',[AuthController::class, 'logout'])->name('logout');

@@ -19,7 +19,7 @@ class UserController extends Controller
     {
         // Cek apakah user ditemukan
         $user = User::find($id);
-        
+
         if (!$user) {
             return back()->with('error', 'Pengguna tidak ditemukan.');
         }
