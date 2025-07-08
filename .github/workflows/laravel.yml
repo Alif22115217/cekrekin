@@ -47,6 +47,12 @@ jobs:
         echo "DB_USERNAME=root" >> .env
         echo "DB_PASSWORD=root" >> .env
 
+    # Run migrations before tests to ensure all tables are created
+    - name: Run migrations
+      run: |
+        php artisan migrate --env=testing --force
+        php artisan db:seed --env=testing --force
+
     # Wait for MySQL to be ready
     - name: Wait for MySQL to be ready
       run: |
@@ -55,10 +61,6 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 10  # Increase wait time if needed
         done
-
-    # Run migrations before tests to ensure all tables are created
-    - name: Run migrations
-      run: php artisan migrate --env=testing --force
 
     # Run the Laravel tests
     - name: Run tests
