@@ -107,29 +107,32 @@ class UserController extends Controller
     // Ganti password
     public function changePassword(Request $request)
     {
-        $user = User::find(Auth::id());
-
-        // Validasi input password
-        $this->validate($request, [
+        // Validasi input
+        $request->validate([
             'oldPassword' => 'required',
-            'newPassword' => 'required|min:8|confirmed', // Menambahkan validasi untuk konfirmasi password
+            'newPassword' => 'required|min:8', // Aturan validasi untuk password baru
         ]);
 
-        // Cek apakah password lama benar
-        if (Hash::check($request['oldPassword'], $user->password)) {
-            // Update password baru
-            $user->update([
-                'password' => Hash::make($request['newPassword'])
-            ]);
+        // Cek apakah password lama yang dimasukkan sesuai dengan password yang ada di database
+        if (!Hash::check($request->oldPassword, Auth::user()->password)) {
+            // Jika password lama salah, kirim pesan error
+            return redirect()->back()->with('message', 'Password saat ini salah.');
+        }
 
-            // Logout setelah mengganti password
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        // Ambil pengguna yang sedang login (ini adalah model Eloquent `User`)
+        $user = Auth::user(); // Ini harus mengembalikan instance model User
 
-            return redirect()->route('authenticate')->with('message', 'Silakan login ulang setelah mengganti password.');
+        // Cek apakah objek yang didapatkan adalah instance dari model User
+        if ($user instanceof User) {
+            // Ganti password dengan password baru
+            $user->password = Hash::make($request->newPassword); // Update password baru
+            $user->save(); // Pastikan kamu memanggil save() untuk menyimpan perubahan ke database
+
+            // Tampilkan pesan sukses setelah berhasil mengganti password
+            return redirect()->back()->with('updated', 'Password berhasil diubah.');
         } else {
-            return back()->with('message', 'Password saat ini salah');
+            // Jika tidak ditemukan pengguna, tampilkan pesan error
+            return redirect()->back()->with('error', 'Terjadi kesalahan, pengguna tidak ditemukan.');
         }
     }
 }
