@@ -4,23 +4,58 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        options: --env MYSQL_ROOT_PASSWORD=root --env MYSQL_DATABASE=pemwebuas
+        ports:
+          - 3306:3306
 
     steps:
+    # Checkout repository code
     - name: Checkout code
       uses: actions/checkout@v2
 
+    # Set up PHP with the necessary extensions
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'  # Tentukan versi PHP yang sesuai dengan aplikasi Anda
-        extensions: mbstring, intl, bcmath, gd, zip
+        php-version: '8.2'
+        extensions: mbstring, intl, bcmath, gd, zip, pdo, mysql
 
+    # Install Composer dependencies
     - name: Install dependencies
       run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+    # Set up environment variables for testing
+    - name: Create .env file
+      run: |
+        echo "APP_NAME=Laravel" > .env
+        echo "APP_ENV=testing" >> .env
+        echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env
+        echo "DB_CONNECTION=mysql" >> .env
+        echo "DB_HOST=mysql" >> .env  # Use the 'mysql' service name to connect to MySQL
+        echo "DB_PORT=3306" >> .env
+        echo "DB_DATABASE=pemwebuas" >> .env
+        echo "DB_USERNAME=root" >> .env
+        echo "DB_PASSWORD=root" >> .env
+
+    # Wait for MySQL to be ready
+    - name: Wait for MySQL to be ready
+      run: |
+        echo "Waiting for MySQL to be ready..."
+        until mysql -h mysql -u root -proot -e "SELECT 1"; do
+          echo "Waiting for MySQL to be ready..."
+          sleep 10  # Increase wait time if needed
+        done
+
+    # Run the Laravel tests
     - name: Run tests
-      run: php artisan test
+      run: php artisan test --env=testing
