@@ -41,7 +41,7 @@ jobs:
         echo "APP_ENV=testing" >> .env
         echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env
         echo "DB_CONNECTION=mysql" >> .env
-        echo "DB_HOST=mysql" >> .env  # Use the 'mysql' service name to connect to MySQL
+        echo "DB_HOST=127.0.0.1" >> .env  # Use 127.0.0.1 to connect to MySQL in the Docker container
         echo "DB_PORT=3306" >> .env
         echo "DB_DATABASE=pemwebuas" >> .env
         echo "DB_USERNAME=root" >> .env
@@ -51,7 +51,7 @@ jobs:
     - name: Wait for MySQL to be ready
       run: |
         echo "Waiting for MySQL to be ready..."
-        until mysql -h mysql -u root -proot -e "SELECT 1"; do
+        until mysql -h 127.0.0.1 -u root -proot -e "SELECT 1"; do
           echo "Waiting for MySQL to be ready..."
           sleep 10  # Increase wait time if needed
         done
