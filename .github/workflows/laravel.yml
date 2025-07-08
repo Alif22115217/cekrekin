@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --no-interaction --prefer-dist
+          composer update --no-interaction --prefer-dist
 
       - name: Set up environment file
         run: cp .env.example .env
