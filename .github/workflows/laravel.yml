@@ -39,7 +39,7 @@ jobs:
       run: |
         echo "APP_NAME=Laravel" > .env
         echo "APP_ENV=testing" >> .env
-        echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env
+        echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env  # Ensure the APP_KEY is generated correctly
         echo "DB_CONNECTION=mysql" >> .env
         echo "DB_HOST=127.0.0.1" >> .env  # Use 127.0.0.1 to connect to MySQL in the Docker container
         echo "DB_PORT=3306" >> .env
@@ -55,6 +55,10 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 10  # Increase wait time if needed
         done
+
+    # Run migrations before tests to ensure all tables are created
+    - name: Run migrations
+      run: php artisan migrate --env=testing --force
 
     # Run the Laravel tests
     - name: Run tests
