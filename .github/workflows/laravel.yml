@@ -34,12 +34,12 @@ jobs:
     - name: Install dependencies
       run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    # Set up environment variables for testing
-    - name: Create .env file
+    # Set up .env file for testing and generate the APP_KEY
+    - name: Set up .env file
       run: |
         echo "APP_NAME=Laravel" > .env
         echo "APP_ENV=testing" >> .env
-        echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env  # Ensure the APP_KEY is generated correctly
+        echo "APP_KEY=base64:$(php artisan key:generate --show)" >> .env  # Ensure the key is generated
         echo "DB_CONNECTION=mysql" >> .env
         echo "DB_HOST=127.0.0.1" >> .env  # Use 127.0.0.1 to connect to MySQL in the Docker container
         echo "DB_PORT=3306" >> .env
@@ -47,7 +47,7 @@ jobs:
         echo "DB_USERNAME=root" >> .env
         echo "DB_PASSWORD=root" >> .env
 
-    # Run migrations before tests to ensure all tables are created
+    # Run migrations and seed before running tests
     - name: Run migrations
       run: |
         php artisan migrate --env=testing --force
